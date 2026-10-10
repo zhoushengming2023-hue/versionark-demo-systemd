@@ -2,13 +2,19 @@
 
 import html
 import os
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from socketserver import ThreadingMixIn
 
 ROOT = Path(__file__).resolve().parent
 VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip() if (ROOT / "VERSION").exists() else "dev"
 # 故障演练：仓库里放一个名为 BREAK_HEALTH 的空文件再发版，健康检查就会失败，平台应自动回滚。
 BROKEN = (ROOT / "BREAK_HEALTH").exists()
+
+
+class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    # 兼容仍使用 Python 3.6 的服务器，避免依赖 3.7 才加入的同名类。
+    daemon_threads = True
 
 
 class Handler(BaseHTTPRequestHandler):
