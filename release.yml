@@ -1,0 +1,27 @@
+version: 1
+build:
+  steps:
+    - type: run
+      name: syntax-check
+      command: [python3, -m, py_compile, app.py]
+artifact:
+  kind: zip
+  deployment:
+    target_type: systemd
+    entrypoint: app.py
+  include:
+    - app.py
+    - VERSION
+    - BREAK_HEALTH
+  health:
+    path: /healthz
+  config:
+    - name: APP_MODE
+      description: 运行模式，会显示在首页
+      example: test
+      required: true
+    - name: SECRET_KEY
+      description: 会话签名密钥（首页只显示是否已设置）
+      secret: true
+      generate: true
+      required: true
